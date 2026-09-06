@@ -7,7 +7,7 @@ import {
   Volume2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Button from "../../../components/ui/Button/Button";
+import Button from "../../../components/ui/button/Button";
 
 const LanguagePage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("en");

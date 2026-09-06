@@ -10,7 +10,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-import Button from "../../../components/ui/Button/Button";
+import Button from "../../../components/ui/button/Button";
 
 const RegistrationPage = () => {
   const [formData, setFormData] = useState({

@@ -8,7 +8,7 @@ import {
   Clock,
 } from "lucide-react";
 
-import Button from "../../../components/ui/Button/Button";
+import Button from "../../../components/ui/button/Button";
 
 const CompletionPage = () => {
   const handleViewSummary = () => {

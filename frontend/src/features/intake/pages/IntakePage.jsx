@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, ArrowRight, MessageSquareHeart } from "lucide-react";
-import Button from "../../../components/ui/Button/Button";
+import Button from '../../../components/ui/button/Button';
 import { useNavigate } from "react-router-dom";
 import QuestionCard from '../components/QuestionCard';
 import AnswerOptions from "../components/AnswerOptions";
