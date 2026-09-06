@@ -18,7 +18,6 @@ const Navbar = () => {
     { name: "Features", href: "#features" },
     { name: "For Hospitals", href: "#hospitals" },
     { name: "For Patients", href: "#patients" },
-    { name: "AYUSH Mode", href: "#ayush" },
     { name: "About", href: "#about" },
   ];
 
@@ -36,7 +35,7 @@ const Navbar = () => {
           </div>
 
           <span className="text-xl font-bold tracking-tight text-[#1F3445]">
-            MediKiosk
+            Vaidyam
           </span>
         </a>
 

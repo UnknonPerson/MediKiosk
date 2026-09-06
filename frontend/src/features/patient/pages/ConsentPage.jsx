@@ -43,7 +43,7 @@ const ConsentPage = () => {
     }
 
     console.log("Consent accepted");
-    navigate("/patient/intake");
+    navigate("/patient/healthcare");
   };
 
   const handleBack = () => {
