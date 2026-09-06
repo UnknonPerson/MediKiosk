@@ -1,13 +1,2 @@
-import mongoose from 'mongoose';
-
-const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log("DataBase Connection Sucessfully Done");
-    }catch(error){
-        console.log("Mongodb connection Failed",error);
-        process.exit(1);
-    }
-}
-
-export default connectDB;
+// Compatibility export while the database connection moves to src/config/db.js.
+export { connectDatabase as default, connectDatabase, disconnectDatabase } from '../config/db.js';

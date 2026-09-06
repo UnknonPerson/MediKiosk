@@ -1,19 +1,26 @@
 {
-  "name": "backend",
+  "name": "vaidyam-backend",
   "version": "1.0.0",
   "description": "SIH 2026 Team 64bit Project backend server",
-  "main": "index.js",
+  "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "check": "node --check src/index.js && node --check src/app.js"
   },
   "author": "Tanisk Kumar",
   "license": "ISC",
   "dependencies": {
+    "cloudinary": "^2.11.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.3.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.5",
+    "multer": "^2.3.0",
     "nodemon": "^3.1.14"
   }
 }

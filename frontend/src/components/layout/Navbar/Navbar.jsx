@@ -31,7 +31,7 @@ const Navbar = () => {
           className="flex items-center gap-2"
         >
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E6F4F0] text-[#0F6B5B]">
-            <HeartPulse size={22} strokeWidth={2.2} />
+            <img src="/images/loggo.png" alt="vaidyam" className="h-full w-full object-contain" />
           </div>
 
           <span className="text-xl font-bold tracking-tight text-[#1F3445]">

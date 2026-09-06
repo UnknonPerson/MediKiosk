@@ -49,11 +49,11 @@ const Footer = () => {
               className="inline-flex items-center gap-3 no-underline"
             >
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#dff1ec] text-[#176b5b]">
-                <HeartPulse size={23} strokeWidth={2} />
+                 <img src="/images/loggo.png" alt="vaidyam" className="h-full w-full object-contain" />
               </div>
 
               <span className="text-2xl font-bold tracking-tight">
-                MediKiosk
+                Vaidyam
               </span>
             </a>
 
@@ -70,7 +70,7 @@ const Footer = () => {
                 className="flex items-center gap-3 transition hover:text-[#8ed8c7] no-underline"
               >
                 <Mail size={17} />
-                hello@medikiosk.in
+                contact@vaidyaam.in
               </a>
 
               <a
