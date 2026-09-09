@@ -1,156 +1,172 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
-export const ACCOUNT_TYPES = Object.freeze([
-  'PATIENT',
-  'DOCTOR',
-  'HOSPITAL_ADMIN',
-  'HOSPITAL_STAFF',
-  'SYSTEM_ADMIN',
-]);
+import {
+  USER_ROLES,
+  ACCOUNT_STATUS,
+  USER_ROLE_VALUES,
+  ACCOUNT_STATUS_VALUES,
+} from "../../constants/roles.js";
 
-export const AUTHENTICATION_METHODS = Object.freeze([
-  'PASSWORD',
-  'PHONE_OTP',
-  'ABHA',
-  'AADHAAR_VERIFICATION',
-]);
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const USER_STATUSES = Object.freeze([
-  'PENDING',
-  'UNDER_REVIEW',
-  'ACTIVE',
-  'REJECTED',
-  'SUSPENDED',
-]);
-
-const emailSchema = new mongoose.Schema({
-  value: {
-    type: String,
-    trim: true,
-    lowercase: true,
-    validate: {
-      validator: (value) => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-      message: 'Email must be valid',
-    },
-  },
-  verified: {
-    type: Boolean,
-    default: false,
-  },
-  verifiedAt: Date,
-}, { _id: false });
-
-const phoneSchema = new mongoose.Schema({
-  value: {
-    type: String,
-    trim: true,
-    validate: {
-      validator: (value) => !value || /^\+[1-9]\d{7,14}$/.test(value),
-      message: 'Phone number must use E.164 format',
-    },
-  },
-  verified: {
-    type: Boolean,
-    default: false,
-  },
-  verifiedAt: Date,
-}, { _id: false });
-
-function validateVerificationMetadata() {
-  if (this.verified && !this.verifiedAt) {
-    this.verifiedAt = new Date();
-  }
-
-  if (!this.verified && this.verifiedAt) {
-    this.invalidate('verifiedAt', 'verifiedAt can only be set for a verified contact method');
-  }
-
-}
-
-emailSchema.pre('validate', validateVerificationMetadata);
-phoneSchema.pre('validate', validateVerificationMetadata);
-
-const userSchema = new mongoose.Schema({
-  accountType: {
-    type: String,
-    enum: ACCOUNT_TYPES,
-    required: true,
-    index: true,
-  },
-  email: emailSchema,
-  phone: phoneSchema,
-  passwordHash: {
-    type: String,
-    trim: true,
-    minlength: 20,
-    maxlength: 512,
-    select: false,
-  },
-  authenticationMethods: {
-    type: [{
+const userSchema = new mongoose.Schema(
+  {
+    fullName: {
       type: String,
-      enum: AUTHENTICATION_METHODS,
-    }],
-    default: [],
-  },
-  status: {
-    type: String,
-    enum: USER_STATUSES,
-    default: 'PENDING',
-    required: true,
-    index: true,
-  },
-  lastLogin: Date,
-}, {
-  timestamps: true,
-  toJSON: {
-    virtuals: true,
-    transform: (_document, result) => {
-      delete result.passwordHash;
-      delete result.__v;
-      return result;
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 100,
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      validate: {
+        validator(value) {
+          return emailRegex.test(value);
+        },
+        message: "Please provide a valid email address",
+      },
+    },
+
+    password: {
+      type: String,
+      required: true,
+      minlength: 8,
+      select: false,
+    },
+
+    role: {
+      type: String,
+      enum: USER_ROLE_VALUES,
+      default: USER_ROLES.PATIENT,
+      required: true,
+    },
+
+    accountStatus: {
+      type: String,
+      enum: ACCOUNT_STATUS_VALUES,
+      default: ACCOUNT_STATUS.PENDING_VERIFICATION,
+      required: true,
+    },
+
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    emailVerificationOtpHash: {
+      type: String,
+      select: false,
+    },
+
+    emailVerificationOtpExpires: {
+      type: Date,
+      select: false,
+    },
+
+    emailVerificationOtpAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+
+    emailVerificationOtpLastSentAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    passwordResetOtpHash: {
+      type: String,
+      select: false,
+    },
+
+    passwordResetOtpExpires: {
+      type: Date,
+      select: false,
+    },
+
+    passwordResetOtpAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+
+    passwordResetOtpLastSentAt: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
+    passwordResetTokenHash: {
+      type: String,
+      select: false,
+    },
+
+    passwordResetTokenExpires: {
+      type: Date,
+      select: false,
+    },
+
+    lastLoginAt: {
+      type: Date,
+      default: null,
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      select: false,
     },
   },
-  toObject: {
-    virtuals: true,
-    transform: (_document, result) => {
-      delete result.passwordHash;
-      delete result.__v;
-      return result;
-    },
+  {
+    timestamps: true,
+    versionKey: false,
+  }
+);
+
+userSchema.pre("save", async function hashPassword() {
+  if (!this.isModified("password")) {
+    return;
+  }
+
+  this.password = await bcrypt.hash(this.password, 12);
+});
+
+userSchema.methods.comparePassword = async function comparePassword(
+  candidatePassword
+) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+userSchema.set("toJSON", {
+  transform(document, returnedObject) {
+    delete returnedObject.password;
+
+    delete returnedObject.emailVerificationOtpHash;
+    delete returnedObject.emailVerificationOtpExpires;
+    delete returnedObject.emailVerificationOtpAttempts;
+    delete returnedObject.emailVerificationOtpLastSentAt;
+
+    delete returnedObject.passwordResetOtpHash;
+    delete returnedObject.passwordResetOtpExpires;
+    delete returnedObject.passwordResetOtpAttempts;
+    delete returnedObject.passwordResetOtpLastSentAt;
+    delete returnedObject.passwordResetTokenHash;
+    delete returnedObject.passwordResetTokenExpires;
+
+    delete returnedObject.isDeleted;
+
+    return returnedObject;
   },
 });
 
-userSchema.index({ 'email.value': 1 }, { unique: true, sparse: true, name: 'unique_email_value' });
-userSchema.index({ 'phone.value': 1 }, { unique: true, sparse: true, name: 'unique_phone_value' });
-userSchema.index({ accountType: 1, status: 1 }, { name: 'account_type_status' });
-
-userSchema.methods.toSafeObject = function toSafeObject() {
-  const safeUser = {
-    id: this._id.toString(),
-    accountType: this.accountType,
-    status: this.status,
-  };
-
-  if (this.email?.value) {
-    safeUser.email = {
-      value: this.email.value,
-      verified: this.email.verified,
-      verifiedAt: this.email.verifiedAt,
-    };
-  }
-
-  if (this.phone?.value) {
-    safeUser.phone = {
-      value: this.phone.value,
-      verified: this.phone.verified,
-      verifiedAt: this.phone.verifiedAt,
-    };
-  }
-
-  return safeUser;
-};
-
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
 export default User;

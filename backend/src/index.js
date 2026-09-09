@@ -1,44 +1,33 @@
-import app from './app.js';
-import env from './config/env.js';
-import { connectDatabase, disconnectDatabase } from './config/db.js';
-
-let server;
-let shuttingDown = false;
+import app from "./app.js";
+import env from "./config/env.js";
+import { connectDatabase } from "./config/database.js";
 
 async function startServer() {
-  await connectDatabase();
+  try {
+    await connectDatabase();
 
-  server = app.listen(env.server.port, () => {
-    console.info(JSON.stringify({
-      level: 'info',
-      event: 'server.started',
-      port: env.server.port,
-      environment: env.nodeEnv,
-    }));
-  });
-}
+    app.listen(env.port, () => {
+      console.log(
+        JSON.stringify({
+          level: "info",
+          event: "server.started",
+          port: env.port,
+          environment: env.nodeEnv,
+        })
+      );
+    });
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        level: "error",
+        event: "server.startup_failed",
+        message: error.message,
+        stack: error.stack,
+      })
+    );
 
-async function shutdown(signal) {
-  if (shuttingDown) return;
-  shuttingDown = true;
-
-  console.info(JSON.stringify({ level: 'info', event: 'server.shutting_down', signal }));
-
-  if (server) {
-    await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+    process.exit(1);
   }
-
-  await disconnectDatabase();
 }
 
-process.once('SIGINT', () => shutdown('SIGINT').then(() => process.exit(0)).catch(() => process.exit(1)));
-process.once('SIGTERM', () => shutdown('SIGTERM').then(() => process.exit(0)).catch(() => process.exit(1)));
-
-startServer().catch((error) => {
-  console.error(JSON.stringify({
-    level: 'error',
-    event: 'server.start_failed',
-    errorName: error.name,
-  }));
-  process.exit(1);
-});
+startServer();

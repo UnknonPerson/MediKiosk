@@ -1,0 +1,19 @@
+export const USER_ROLES = Object.freeze({
+  PATIENT: "PATIENT",
+  DOCTOR: "DOCTOR",
+  HOSPITAL_ADMIN: "HOSPITAL_ADMIN",
+  SUPER_ADMIN: "SUPER_ADMIN",
+});
+
+export const ACCOUNT_STATUS = Object.freeze({
+  PENDING_VERIFICATION: "PENDING_VERIFICATION",
+  ACTIVE: "ACTIVE",
+  SUSPENDED: "SUSPENDED",
+  DEACTIVATED: "DEACTIVATED",
+});
+
+export const USER_ROLE_VALUES = Object.values(USER_ROLES);
+
+export const ACCOUNT_STATUS_VALUES = Object.values(
+  ACCOUNT_STATUS
+);

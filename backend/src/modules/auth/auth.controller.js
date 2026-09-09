@@ -1,80 +1,142 @@
-import ApiError from '../../utils/ApiError.js';
-import ApiResponse from '../../utils/ApiResponse.js';
-import asyncHandler from '../../utils/asyncHandler.js';
-import { logout, refreshAuthentication } from './auth.service.js';
 import {
-  authenticatePatientWithPhoneOtp,
-  sendPatientPhoneOtp,
-} from '../patients/patient.service.js';
-import {
-  authenticateDoctorByPhoneOtp,
-  sendDoctorPhoneOtp,
-} from '../doctors/doctor.service.js';
+  forgotPassword,
+  getCurrentUser,
+  loginUser,
+  logoutAllSessions,
+  logoutUser,
+  refreshAccessToken,
+  registerUser,
+  resendVerificationOtp,
+  resetPassword,
+  verifyEmailOtp,
+  verifyPasswordResetOtp,
+} from "./auth.service.js";
 
-function refreshTokenFromRequest(req) {
-  const { refreshToken } = req.body || {};
+function sendSuccess(res, statusCode, message, data = {}) {
+  return res.status(statusCode).json({
+    success: true,
+    message,
+    data,
+  });
+}
 
-  if (typeof refreshToken !== 'string' || refreshToken.length === 0) {
-    throw new ApiError(400, 'A refresh token is required', { code: 'REFRESH_TOKEN_REQUIRED' });
+export async function register(req, res, next) {
+  try {
+    const result = await registerUser(req.body);
+    return sendSuccess(res, 201, result.message, {
+      user: result.user,
+    });
+  } catch (error) {
+    next(error);
   }
-
-  return refreshToken;
 }
 
-function requestMetadata(req) {
-  return {
-    deviceInfo: req.get('user-agent'),
-    ipAddress: req.ip,
-  };
+export async function verifyEmail(req, res, next) {
+  try {
+    const result = await verifyEmailOtp(req.body);
+    return sendSuccess(res, 200, result.message, {
+      user: result.user,
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
-export const refresh = asyncHandler(async (req, res) => {
-  const tokens = await refreshAuthentication(refreshTokenFromRequest(req), requestMetadata(req));
+export async function resendVerification(req, res, next) {
+  try {
+    const result = await resendVerificationOtp(req.body);
+    return sendSuccess(res, 200, result.message);
+  } catch (error) {
+    next(error);
+  }
+}
 
-  res.status(200).json(new ApiResponse({
-    tokenType: 'Bearer',
-    ...tokens,
-  }, 'Tokens refreshed successfully'));
-});
+export async function login(req, res, next) {
+  try {
+    const result = await loginUser({
+      email: req.body.email,
+      password: req.body.password,
+      userAgent: req.get("user-agent") || null,
+      ipAddress: req.ip || null,
+    });
 
-export const logoutCurrentSession = asyncHandler(async (req, res) => {
-  await logout(refreshTokenFromRequest(req));
+    return sendSuccess(res, 200, "Login successful", {
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
-  res.status(200).json(new ApiResponse({}, 'Logged out successfully'));
-});
+export async function refresh(req, res, next) {
+  try {
+    const result = await refreshAccessToken(req.body);
+    return sendSuccess(res, 200, "Access token refreshed", result);
+  } catch (error) {
+    next(error);
+  }
+}
 
-export const getCurrentUser = asyncHandler(async (req, res) => {
-  res.status(200).json(new ApiResponse(req.user, 'Current user retrieved successfully'));
-});
+export async function logout(req, res, next) {
+  try {
+    await logoutUser(req.body);
+    return sendSuccess(res, 200, "Logged out successfully");
+  } catch (error) {
+    next(error);
+  }
+}
 
-export const sendPatientPhoneLoginOtp = asyncHandler(async (req, res) => {
-  await sendPatientPhoneOtp(req.body?.phone);
+export async function logoutAll(req, res, next) {
+  try {
+    await logoutAllSessions(req.user.id);
+    return sendSuccess(res, 200, "Logged out from all sessions");
+  } catch (error) {
+    next(error);
+  }
+}
 
-  res.status(200).json(new ApiResponse({}, 'If the phone number is eligible, an OTP has been sent.'));
-});
+export async function forgotPasswordRequest(req, res, next) {
+  try {
+    const result = await forgotPassword(req.body);
+    return sendSuccess(res, 200, result.message);
+  } catch (error) {
+    next(error);
+  }
+}
 
-export const verifyPatientPhoneLoginOtp = asyncHandler(async (req, res) => {
-  const authentication = await authenticatePatientWithPhoneOtp({
-    phone: req.body?.phone,
-    otp: req.body?.otp,
-    requestMetadata: requestMetadata(req),
-  });
+export async function verifyPasswordReset(req, res, next) {
+  try {
+    const result = await verifyPasswordResetOtp(req.body);
+    return sendSuccess(res, 200, result.message, {
+      resetToken: result.resetToken,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
-  res.status(200).json(new ApiResponse(authentication, 'Authentication successful'));
-});
+export async function resetPasswordRequest(req, res, next) {
+  try {
+    await resetPassword(req.body);
+    return sendSuccess(
+      res,
+      200,
+      "Password reset successfully. Please log in again."
+    );
+  } catch (error) {
+    next(error);
+  }
+}
 
-export const sendDoctorPhoneVerificationOtp = asyncHandler(async (req, res) => {
-  await sendDoctorPhoneOtp(req.body?.phone);
-
-  res.status(200).json(new ApiResponse({}, 'If the phone number is eligible, an OTP has been sent.'));
-});
-
-export const verifyDoctorPhoneVerificationOtp = asyncHandler(async (req, res) => {
-  const authentication = await authenticateDoctorByPhoneOtp({
-    phone: req.body?.phone,
-    otp: req.body?.otp,
-    requestMetadata: requestMetadata(req),
-  });
-
-  res.status(200).json(new ApiResponse(authentication, 'Authentication successful'));
-});
+export async function me(req, res, next) {
+  try {
+    const user = await getCurrentUser(req.user.id);
+    return sendSuccess(res, 200, "Current user retrieved", {
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
+}

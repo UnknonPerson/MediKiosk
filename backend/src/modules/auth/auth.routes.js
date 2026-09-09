@@ -1,42 +1,63 @@
-import { Router } from 'express';
-import { rateLimit } from 'express-rate-limit';
-import env from '../../config/env.js';
-import authenticate from '../../middleware/authenticate.js';
+import { Router } from "express";
+
 import {
-  getCurrentUser,
-  logoutCurrentSession,
+  forgotPasswordRequest,
+  login,
+  logout,
+  logoutAll,
+  me,
   refresh,
-  sendDoctorPhoneVerificationOtp,
-  sendPatientPhoneLoginOtp,
-  verifyDoctorPhoneVerificationOtp,
-  verifyPatientPhoneLoginOtp,
-} from './auth.controller.js';
+  register,
+  resendVerification,
+  resetPasswordRequest,
+  verifyEmail,
+  verifyPasswordReset,
+} from "./auth.controller.js";
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  refreshTokenSchema,
+  registerSchema,
+  resendVerificationOtpSchema,
+  resetPasswordSchema,
+  verifyEmailOtpSchema,
+  verifyPasswordResetOtpSchema,
+} from "./auth.validation.js";
+import { requireAuth } from "../../middleware/auth.middleware.js";
+import { validate } from "../../middleware/validate.middleware.js";
 
 const router = Router();
 
-function otpRateLimiter(limit) {
-  return rateLimit({
-    windowMs: env.otp.rateLimit.windowMs,
-    limit,
-    standardHeaders: 'draft-8',
-    legacyHeaders: false,
-    handler(req, res) {
-      res.status(429).json({
-        success: false,
-        message: 'Too many OTP requests. Please try again later.',
-        error: { code: 'OTP_RATE_LIMITED' },
-        requestId: req.requestId,
-      });
-    },
-  });
-}
-
-router.post('/refresh', refresh);
-router.post('/logout', logoutCurrentSession);
-router.get('/me', authenticate, getCurrentUser);
-router.post('/patient/phone/send-otp', otpRateLimiter(env.otp.rateLimit.sendMax), sendPatientPhoneLoginOtp);
-router.post('/patient/phone/verify-otp', otpRateLimiter(env.otp.rateLimit.verifyMax), verifyPatientPhoneLoginOtp);
-router.post('/doctor/phone/send-otp', otpRateLimiter(env.otp.rateLimit.sendMax), sendDoctorPhoneVerificationOtp);
-router.post('/doctor/phone/verify-otp', otpRateLimiter(env.otp.rateLimit.verifyMax), verifyDoctorPhoneVerificationOtp);
+router.post("/register", validate(registerSchema), register);
+router.post(
+  "/verify-email",
+  validate(verifyEmailOtpSchema),
+  verifyEmail
+);
+router.post(
+  "/resend-verification-otp",
+  validate(resendVerificationOtpSchema),
+  resendVerification
+);
+router.post("/login", validate(loginSchema), login);
+router.post("/refresh", validate(refreshTokenSchema), refresh);
+router.post("/logout", validate(refreshTokenSchema), logout);
+router.post("/logout-all", requireAuth, logoutAll);
+router.post(
+  "/forgot-password",
+  validate(forgotPasswordSchema),
+  forgotPasswordRequest
+);
+router.post(
+  "/verify-password-reset-otp",
+  validate(verifyPasswordResetOtpSchema),
+  verifyPasswordReset
+);
+router.post(
+  "/reset-password",
+  validate(resetPasswordSchema),
+  resetPasswordRequest
+);
+router.get("/me", requireAuth, me);
 
 export default router;

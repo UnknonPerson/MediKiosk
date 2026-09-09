@@ -23,3 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+
+node_modules/
+.env
+uploads/
+npm-debug.log*

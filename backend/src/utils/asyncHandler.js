@@ -1,3 +1,9 @@
-export default function asyncHandler(handler) {
-  return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
-}
+const asyncHandler = (requestHandler) => {
+  return (req, res, next) => {
+    Promise.resolve(
+      requestHandler(req, res, next)
+    ).catch(next);
+  };
+};
+
+export default asyncHandler;
