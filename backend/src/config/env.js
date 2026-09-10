@@ -63,6 +63,28 @@ function getJwtDuration(name, defaultValue) {
   return value;
 }
 
+const configuredFrontendUrls = (process.env.FRONTEND_URL || "http://localhost:5173")
+  .split(",")
+  .map((url) => url.trim())
+  .filter(Boolean);
+
+const localFrontendAliases = configuredFrontendUrls.flatMap((url) => {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "localhost") {
+      parsed.hostname = "127.0.0.1";
+      return [parsed.toString().replace(/\/$/, "")];
+    }
+    if (parsed.hostname === "127.0.0.1") {
+      parsed.hostname = "localhost";
+      return [parsed.toString().replace(/\/$/, "")];
+    }
+  } catch {
+    // Leave malformed values for the CORS library to reject safely.
+  }
+  return [];
+});
+
 const env = {
   /**
    * Application
@@ -74,9 +96,8 @@ const env = {
     5000
   ),
 
-  frontendUrl:
-    process.env.FRONTEND_URL ||
-    "http://localhost:5173",
+  frontendUrl: configuredFrontendUrls[0],
+  frontendUrls: [...new Set([...configuredFrontendUrls, ...localFrontendAliases])],
 
   /**
    * Database

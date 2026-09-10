@@ -235,6 +235,26 @@ export async function getIntakeById(userId, intakeId) {
 }
 
 /**
+ * Retrieve the intake attached to an owned consultation without exposing the
+ * patient ownership reference. This is deliberately scoped to the current
+ * patient rather than a general consultation lookup.
+ */
+export async function getIntakeByConsultationId(userId, consultationId) {
+  const patient = await getPatientByUserId(userId);
+  const intake = await Intake.findOne({
+    consultationId,
+    patientId: patient._id,
+    isDeleted: false,
+  });
+
+  if (!intake) {
+    throw new ApiError(404, "Intake not found.");
+  }
+
+  return getPatientIntake(intake);
+}
+
+/**
  * Retrieve answer history without exposing the intake's owner reference.
  */
 export async function getIntakeAnswers(userId, intakeId) {

@@ -2,6 +2,7 @@ import {
   createIntake,
   getIntakeAnswers,
   getIntakeById,
+  getIntakeByConsultationId,
   getCurrentQuestion,
   submitIntakeAnswer,
 } from "./intake.service.js";
@@ -109,6 +110,32 @@ export async function getById(req, res, next) {
   }
 }
 
+/**
+ * Retrieve the intake attached to an owned consultation. This supports
+ * resuming or reviewing saved information after a browser refresh.
+ */
+export async function getByConsultation(req, res, next) {
+  try {
+    const intake = await getIntakeByConsultationId(
+      req.user.id,
+      req.params.consultationId
+    );
+
+    return sendSuccess(
+      res,
+      200,
+      "Intake retrieved successfully",
+      { intake }
+    );
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Retrieve the intake attached to an owned consultation. This supports
+ * resuming or reviewing saved information after a browser refresh.
+ */
 /**
  * Retrieve the immutable answer history for an intake.
  */

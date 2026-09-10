@@ -4,6 +4,7 @@ import { rateLimit } from "express-rate-limit";
 import {
   create,
   getAnswers,
+  getByConsultation,
   getById,
   getQuestion,
   submitAnswer,
@@ -11,6 +12,7 @@ import {
 
 import {
   createIntakeSchema,
+  consultationIdParamsSchema,
   intakeIdParamsSchema,
   submitIntakeAnswerSchema,
 } from "./intake.validation.js";
@@ -85,6 +87,12 @@ router.post(
   validate(intakeIdParamsSchema, "params"),
   validate(submitIntakeAnswerSchema),
   submitAnswer
+);
+
+router.get(
+  "/consultation/:consultationId",
+  validate(consultationIdParamsSchema, "params"),
+  getByConsultation
 );
 
 /**

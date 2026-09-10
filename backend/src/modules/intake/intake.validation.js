@@ -54,3 +54,10 @@ export const intakeIdParamsSchema = z
     intakeId: mongoIdSchema,
   })
   .strip();
+
+
+export const consultationIdParamsSchema = z
+  .object({
+    consultationId: mongoIdSchema,
+  })
+  .strip();

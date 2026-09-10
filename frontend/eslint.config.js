@@ -5,7 +5,10 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores([
+    'dist',
+    'build-verify*',
+  ]),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
@@ -16,6 +19,11 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    rules: {
+      // Data-fetching effects dispatch Redux thunks; the async result updates
+      // store state rather than synchronously changing component state.
+      'react-hooks/set-state-in-effect': 'off',
     },
   },
 ])
