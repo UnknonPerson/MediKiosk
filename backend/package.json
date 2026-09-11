@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "check": "node --check src/index.js && node --check src/app.js",
-    "test": "node --test test/patient-intake.unit.test.js"
+    "check": "node --check src/index.js && node --check src/app.js && node --check src/modules/document/document.routes.js && node --check src/modules/document/document.service.js",
+    "test": "node --test test/patient-intake.unit.test.js test/document.unit.test.js test/summary.unit.test.js"
   },
   "author": "Tanisk Kumar",
   "license": "ISC",

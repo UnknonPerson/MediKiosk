@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -98,6 +100,28 @@ const env = {
 
   frontendUrl: configuredFrontendUrls[0],
   frontendUrls: [...new Set([...configuredFrontendUrls, ...localFrontendAliases])],
+
+  document: {
+    maxUploadBytes: getPositiveInteger(
+      "DOCUMENT_MAX_UPLOAD_BYTES",
+      10 * 1024 * 1024
+    ),
+    uploadDirectory: path.resolve(
+      process.env.DOCUMENT_UPLOAD_DIR || "uploads/documents"
+    ),
+  },
+
+  /**
+   * Document Processing Service
+   */
+  pythonService: {
+    url: process.env.PYTHON_SERVICE_URL || "http://localhost:8001",
+    token: process.env.PYTHON_SERVICE_TOKEN || "",
+    timeoutMs: getPositiveInteger(
+      "PROCESSING_TIMEOUT_MS",
+      120000
+    ),
+  },
 
   /**
    * Database

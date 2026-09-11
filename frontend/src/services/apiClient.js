@@ -83,7 +83,8 @@ class ApiClient {
 
   async request(path, { method = "GET", body, headers = {}, skipRefresh = false } = {}) {
     const requestHeaders = { ...headers };
-    if (body !== undefined) requestHeaders["Content-Type"] = "application/json";
+    const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+    if (body !== undefined && !isFormData) requestHeaders["Content-Type"] = "application/json";
     if (this.session?.accessToken) requestHeaders.Authorization = `Bearer ${this.session.accessToken}`;
 
     let response;
@@ -91,7 +92,7 @@ class ApiClient {
       response = await fetch(`${this.baseUrl}${path}`, {
         method,
         headers: requestHeaders,
-        body: body === undefined ? undefined : JSON.stringify(body),
+        body: body === undefined ? undefined : (isFormData ? body : JSON.stringify(body)),
       });
     } catch {
       throw new ApiClientError("We could not connect to Vaidyam. Please check your connection and try again.");
@@ -114,6 +115,8 @@ class ApiClient {
   get(path) { return this.request(path); }
   post(path, body) { return this.request(path, { method: "POST", body }); }
   patch(path, body) { return this.request(path, { method: "PATCH", body }); }
+  upload(path, formData) { return this.request(path, { method: "POST", body: formData }); }
+  delete(path) { return this.request(path, { method: "DELETE" }); }
 }
 
 export const apiClient = new ApiClient();

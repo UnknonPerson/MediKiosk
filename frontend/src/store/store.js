@@ -3,12 +3,18 @@ import authReducer, { logout } from "../features/auth/authSlice";
 import patientReducer from "../features/patient/patientSlice";
 import consultationsReducer from "../features/consultation/consultationsSlice";
 import intakeReducer from "../features/intake/intakeSlice";
+import documentReducer from "../features/document/documentSlice";
+import timelineReducer from "../features/patient/timelineSlice";
+import summaryReducer from "../features/summary/summarySlice";
 
 const appReducer = combineReducers({
   auth: authReducer,
   patient: patientReducer,
   consultations: consultationsReducer,
   intake: intakeReducer,
+  documents: documentReducer,
+  timeline: timelineReducer,
+  summary: summaryReducer,
 });
 
 const rootReducer = (state, action) => {

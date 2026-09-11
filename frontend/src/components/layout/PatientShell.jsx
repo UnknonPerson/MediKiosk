@@ -10,6 +10,7 @@ const navigation = [
   { to: "/patient/healthcare", label: "Start intake", icon: MessageCircleHeart },
   { to: "/patient/timeline", label: "My timeline", icon: CalendarClock },
   { to: "/patient/documents", label: "Documents", icon: FileUp },
+  { to: "/patient/record-summary", label: "Health record", icon: LayoutDashboard },
 ];
 
 export default function PatientShell() {

@@ -10,6 +10,9 @@ import authRoutes from "./modules/auth/auth.routes.js";
 import patientRoutes from "./modules/patient/patient.routes.js";
 import consultationRoutes from "./modules/consultation/consultation.routes.js";
 import intakeRoutes from "./modules/intake/intake.routes.js";
+import documentRoutes from "./modules/document/document.routes.js";
+import timelineRoutes from "./modules/timeline/timeline.routes.js";
+import summaryRoutes from "./modules/summary/summary.routes.js";
 
 const app = express();
 
@@ -64,6 +67,18 @@ app.use(
 app.use(
   "/api/v1/intakes",
   intakeRoutes
+);
+app.use(
+  "/api/v1/documents",
+  documentRoutes
+);
+app.use(
+  "/api/v1/timeline",
+  timelineRoutes
+);
+app.use(
+  "/api/v1/summary",
+  summaryRoutes
 );
 
 
